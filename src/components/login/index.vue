@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import store from '@/store'
 export default {
   data () {
     const checkMobile = (rule, value, callback) => {
@@ -51,8 +52,8 @@ export default {
     login () {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          // console.log('success')
-          this.$http.post('http://ttapi.research.itcast.cn/mp/v1_0/authorizations', this.form).then(res => {
+          this.$http.post('/authorizations', this.form).then(res => {
+            store.setUser(res.data.data)
             this.$router.push('/')
           }).catch(() => {
             this.$message.error('手机号或验证码错误')

@@ -50,14 +50,15 @@ export default {
   },
   methods: {
     login () {
-      this.$refs.form.validate((valid) => {
+      this.$refs.form.validate(async (valid) => {
         if (valid) {
-          this.$http.post('/authorizations', this.form).then(res => {
-            store.setUser(res.data.data)
+          try {
+            const { data: { data } } = await this.$http.post('authorizations', this.form)
+            store.setUser(data)
             this.$router.push('/')
-          }).catch(() => {
+          } catch (e) {
             this.$message.error('手机号或验证码错误')
-          })
+          }
         }
       })
     }

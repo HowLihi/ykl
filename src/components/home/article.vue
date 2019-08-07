@@ -15,38 +15,72 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="频道：">
-          <el-select placeholder="请选择" v-model="reqParams.channel_id">
+          <el-select clearable placeholder="请选择" v-model="reqParams.channel_id">
             <el-option
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
               v-for="item in channelOptions"
             ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="日期：">
           <el-date-picker
+            @change="changeDate"
             end-placeholder="结束日期"
             range-separator="至"
             start-placeholder="开始日期"
             type="daterange"
             v-model="dateArr"
+            value-format="yyyy-MM-dd"
           ></el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">筛选</el-button>
+          <el-button type="primary" @click="select">筛选</el-button>
         </el-form-item>
       </el-form>
     </el-card>
     <el-card>
-      <div slot="header">根据筛选条件共查询到 0 条结果：</div>
+      <div slot="header">根据筛选条件共查询到 {{total}} 条结果：</div>
       <!-- 表格组件 -->
       <el-table :data="articles">
-        <el-table-column label="编号" prop="id"></el-table-column>
+        <el-table-column label="封面">
+          <template slot-scope="scope">
+            <el-image :src="scope.row.cover.images[0]" fit="cover" style="width:120px;height:80px">
+              <div slot="error">
+                <img alt src="../../assets/images/error.gif" style="width:120px;height:80px" />
+              </div>
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column label="标题" prop="title"></el-table-column>
+        <el-table-column label="状态">
+          <template slot-scope="scope">
+            <el-tag type="success" v-if="scope.row.status === 2">审核通过</el-tag>
+            <el-tag v-if="scope.row.status === 1">待审核</el-tag>
+            <el-tag type="info" v-if="scope.row.status === 0">草稿</el-tag>
+            <el-tag type="warning" v-if="scope.row.status === 3">审核失败</el-tag>
+            <el-tag type="danger" v-if="scope.row.status === 4">已删除</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="发布时间" prop="pubdate"></el-table-column>
+        <el-table-column label="操作" width="120">
+          <template slot-scope="scope">
+            <el-button @click="edit(scope.row.id)" circle icon="el-icon-edit" plain type="primary"></el-button>
+            <el-button @click="del(scope.row.id)" circle icon="el-icon-delete" plain type="danger"></el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <!-- 分页组件 -->
       <div style="text-align:center;margin-top:30px;">
-        <el-pagination :total="1000" background layout="prev, pager, next, total"></el-pagination>
+        <el-pagination
+          :current-page="reqParams.page"
+          :page-size="reqParams.per_page"
+          :total="total"
+          @current-change="changePager"
+          background
+          layout="prev, pager, next, total"
+        ></el-pagination>
       </div>
     </el-card>
   </div>
@@ -64,9 +98,69 @@ export default {
         begin_pubdate: null,
         end_pubdate: null
       },
-      channelOptions: [{ label: 'js', value: '1000' }],
+      channelOptions: [],
       dateArr: [],
-      articles: [{ date: '2019-10-10' }]
+      articles: [],
+      total: 0
+    }
+  },
+  created () {
+    this.getChannelOptions()
+    this.getArticles()
+  },
+  methods: {
+    async getChannelOptions () {
+      const { data: { data } } = await this.$http.get('channels')
+      this.channelOptions = data.channels
+    },
+    async getArticles () {
+      const { data: { data } } = await this.$http.get('articles', { params: this.reqParams })
+      this.articles = data.results
+      this.total = data.total_count
+    },
+    // 组件内部的方法,参数为当前页
+    changePager (newPage) {
+      this.reqParams.page = newPage
+      this.getArticles()
+    },
+    changeDate (dateArr) {
+      if (dateArr) {
+        this.reqParams.begin_pubdate = dateArr[0]
+        this.reqParams.end_pubdate = dateArr[1]
+      } else {
+        this.reqParams.begin_pubdate = null
+        this.reqParams.end_pubdate = null
+      }
+    },
+    select () {
+      this.reqParams.page = 1
+      this.getArticles()
+    },
+    del (id) {
+      // 1. 弹出一个确认框
+      // 2. 点击确认  发起删除请求
+      // 3. 删除成功   提示   更新列表
+      this.$confirm('亲，此操作将永久删除该文章, 是否继续?', '温馨提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await this.$http.delete(`articles/${id}`)
+        // 上面的请求确实成功了，响应的时候来到前端报错了，阻止下面程序的执行。
+        // 提示 更新列表
+        this.$message.success('删除文章成功')
+        this.getArticles()
+      }).catch(() => {})
+    },
+    edit (id) {
+      this.$router.push('/publish?id=' + id)
+    }
+  },
+  watch: {
+    'reqParams.channel_id': function (newVal, oldVal) {
+      if (newVal === '') {
+        this.reqParams.channel_id = null
+      }
     }
   }
 }

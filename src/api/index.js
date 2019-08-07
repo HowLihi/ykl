@@ -1,5 +1,6 @@
 import axios from 'axios'
 import store from '@/store'
+import JSONBIG from 'json-bigint'
 // 配置基准路径
 axios.defaults.baseURL = 'http://ttapi.research.itcast.cn/mp/v1_0/'
 // 请求头字段
@@ -16,4 +17,11 @@ axios.interceptors.response.use((res) => {
   }
   return Promise.reject(err)
 })
+axios.defaults.transformResponse = [(data) => {
+  try {
+    return JSONBIG.parse(data)
+  } catch (e) {
+    return data
+  }
+}]
 export default axios

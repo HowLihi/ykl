@@ -21,7 +21,7 @@ router.beforeEach((to, from, next) => {
 })
 // 需求: 每次请求时头部携带token,要用到请求拦截器,对axios进行配置
 axios.interceptors.request.use((config) => {
-  config.headers.Authorization = ` Bearer ${store.getUser().token}`
+  config.headers.Authorization = `Bearer ${store.getUser().token}`
   return config
 },
 // 如果出错返回一个错误的Promise对象

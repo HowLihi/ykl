@@ -15,14 +15,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="频道：">
-          <el-select clearable placeholder="请选择" v-model="reqParams.channel_id">
-            <el-option
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-              v-for="item in channelOptions"
-            ></el-option>
-          </el-select>
+        <my-channel v-model="reqParams.channel_id"></my-channel>
         </el-form-item>
         <el-form-item label="日期：">
           <el-date-picker
@@ -45,9 +38,9 @@
       <!-- 表格组件 -->
       <el-table :data="articles">
         <el-table-column label="封面">
-          <template slot-scope="scope">
+           <template v-slot="scope">
             <el-image :src="scope.row.cover.images[0]" fit="cover" style="width:120px;height:80px">
-              <div slot="error">
+               <div slot="error">
                 <img alt src="../../assets/images/error.gif" style="width:120px;height:80px" />
               </div>
             </el-image>
@@ -55,7 +48,7 @@
         </el-table-column>
         <el-table-column label="标题" prop="title"></el-table-column>
         <el-table-column label="状态">
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <el-tag type="success" v-if="scope.row.status === 2">审核通过</el-tag>
             <el-tag v-if="scope.row.status === 1">待审核</el-tag>
             <el-tag type="info" v-if="scope.row.status === 0">草稿</el-tag>
@@ -65,7 +58,7 @@
         </el-table-column>
         <el-table-column label="发布时间" prop="pubdate"></el-table-column>
         <el-table-column label="操作" width="120">
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <el-button @click="edit(scope.row.id)" circle icon="el-icon-edit" plain type="primary"></el-button>
             <el-button @click="del(scope.row.id)" circle icon="el-icon-delete" plain type="danger"></el-button>
           </template>
@@ -88,8 +81,9 @@
 
 <script>
 import MyBread from '@/components/slots/my-bread.vue'
+import myChannel from '@/components/slots/channel.vue'
 export default {
-  components: { MyBread },
+  components: { MyBread, myChannel },
   data () {
     return {
       reqParams: {
@@ -98,21 +92,15 @@ export default {
         begin_pubdate: null,
         end_pubdate: null
       },
-      channelOptions: [],
       dateArr: [],
       articles: [],
       total: 0
     }
   },
   created () {
-    this.getChannelOptions()
     this.getArticles()
   },
   methods: {
-    async getChannelOptions () {
-      const { data: { data } } = await this.$http.get('channels')
-      this.channelOptions = data.channels
-    },
     async getArticles () {
       const { data: { data } } = await this.$http.get('articles', { params: this.reqParams })
       this.articles = data.results
@@ -155,16 +143,13 @@ export default {
     edit (id) {
       this.$router.push('/publish?id=' + id)
     }
-  },
-  watch: {
-    'reqParams.channel_id': function (newVal, oldVal) {
-      if (newVal === '') {
-        this.reqParams.channel_id = null
-      }
-    }
   }
+
 }
 </script>
 
-<style>
+<style lang="less">
+  .el-card {
+    margin-bottom: 30px;
+  }
 </style>

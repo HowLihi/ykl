@@ -6,6 +6,7 @@ import Welcome from '../components/home/welcome.vue'
 import Article from '../components/home/article.vue'
 import Photos from '../components/photos/index.vue'
 import notFound from '../components/home/notFound.vue'
+import Publish from '../components/publish/index.vue'
 import store from '../store'
 Vue.use(VueRouter)
 const router = new VueRouter({
@@ -16,7 +17,8 @@ const router = new VueRouter({
       children: [
         { path: '', component: Welcome },
         { path: '/article', component: Article },
-        { path: '/image', component: Photos }
+        { path: '/image', component: Photos },
+        { path: '/publish', component: Publish }
       ] },
     // 路径404
     { path: '*', name: '404', component: notFound }

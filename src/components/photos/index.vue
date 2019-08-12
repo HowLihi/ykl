@@ -118,7 +118,7 @@ export default {
     },
     deleteImage (id) {
       // 加个确认框
-      this.$confirm('老铁，此操作将永久删除该图片, 是否继续?', '温馨提示', {
+      this.$confirm('此操作将永久删除该图片, 是否继续?', '温馨提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

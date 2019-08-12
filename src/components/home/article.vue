@@ -4,7 +4,7 @@
       <div class="clearfix" slot="header">
         <my-bread>粉丝管理</my-bread>
       </div>
-      <el-form label-width="80px" ref="form" size="small">
+      <el-form label-width="80px" ref="form" size="small" :model="reqParams">
         <el-form-item label="状态: ">
           <el-radio-group v-model="reqParams.status">
             <el-radio :label="null">全部</el-radio>

@@ -17,18 +17,12 @@ export default {
   },
   methods: {
     fn (val) {
+      if (val === '') val = null
       this.$emit('input', val)
     },
     async getChannelOptions () {
       const { data: { data } } = await this.$http.get('channels')
       this.channelOptions = data.channels
-    }
-  },
-  watch: {
-    myValue: function (newVal, oldVal) {
-      if (newVal === '') {
-        this.reqParams.channel_id = null
-      }
     }
   }
 }
